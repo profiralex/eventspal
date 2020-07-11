@@ -12,9 +12,10 @@ import (
 )
 
 type BaseClient struct {
-	BaseURL string
-	Client  *http.Client
-	Headers Headers
+	BaseURL     string
+	Client      *http.Client
+	Headers     Headers
+	QueryParams Query
 }
 
 type Query map[string]string
@@ -60,6 +61,9 @@ func (c *BaseClient) ExecuteRequest(ctx context.Context, method string, requestU
 	}
 
 	query := req.URL.Query()
+	for k, v := range c.QueryParams {
+		query.Add(k, v)
+	}
 	for k, v := range queryParams {
 		query.Add(k, v)
 	}

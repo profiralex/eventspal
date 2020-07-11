@@ -4,8 +4,8 @@ import (
 	"context"
 	log "github.com/sirupsen/logrus"
 	"small_container/pkg/config"
+	"small_container/pkg/events"
 	"small_container/pkg/logs"
-	"small_container/pkg/weather"
 )
 
 func main() {
@@ -13,11 +13,12 @@ func main() {
 	cfg := config.GetConfig()
 	logs.Init(cfg)
 
-	client := weather.NewClient(cfg)
-	data, err := client.GetWeatherByLatLong(context.Background(), 23.6, 46.5)
+	client := events.NewClient(cfg)
+	data, err := client.GetEventsByLatLong(context.Background(), 37, -122, 10)
 	if err != nil {
-		log.Errorf("Failed to get weather data: %s", err)
+		log.Errorf("Failed to get events data: %s", err)
+		return
 	}
 
-	log.WithFields(log.Fields{"data": data}).Info("Successfully queried weather data")
+	log.WithFields(log.Fields{"data": data}).Infof("Successfully events weather data %d", len(data))
 }

@@ -18,7 +18,7 @@ type Config struct {
 	}
 
 	Events struct {
-		BaseURL string `cfg:"EVENTS_BASE_URL"`
+		BaseURL string `cfg:"EVENTS_BASE_URL" cfg-default:"https://app.ticketmaster.com/discovery/v2"`
 		APIKey  string `cfg:"EVENTS_API_KEY"`
 	}
 }
