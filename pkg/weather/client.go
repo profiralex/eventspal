@@ -4,22 +4,11 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"small_container/pkg/common"
-	"small_container/pkg/config"
+	"eventspal/pkg/common"
+	"eventspal/pkg/config"
 	"strconv"
 	"time"
 )
-
-type Weather struct {
-	Time        time.Time `json:"time"`
-	Cloudcover  int       `json:"cloudcover"`
-	LiftedIndex int       `json:"lifted_index"`
-	PrecType    string    `json:"prec_type"`
-	PrecAmount  int       `json:"prec_amount"`
-	Temp2m      int       `json:"temp2m"`
-	Rh2m        string    `json:"rh2m"`
-	Weather     string    `json:"weather"`
-}
 
 type Client interface {
 	GetWeatherByLatLong(ctx context.Context, lat float64, lon float64) ([]Weather, error)

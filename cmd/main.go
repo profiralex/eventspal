@@ -3,9 +3,9 @@ package main
 import (
 	"context"
 	log "github.com/sirupsen/logrus"
-	"small_container/pkg/config"
-	"small_container/pkg/events"
-	"small_container/pkg/logs"
+	"eventspal/pkg/config"
+	"eventspal/pkg/eventspal"
+	"eventspal/pkg/logs"
 )
 
 func main() {
@@ -13,12 +13,12 @@ func main() {
 	cfg := config.GetConfig()
 	logs.Init(cfg)
 
-	client := events.NewClient(cfg)
-	data, err := client.GetEventsByLatLong(context.Background(), 37, -122, 10)
+	service := eventspal.NewService(cfg)
+	data, err := service.GetWeatherAndEventsForLocation(context.Background(), 37, -122)
 	if err != nil {
 		log.Errorf("Failed to get events data: %s", err)
 		return
 	}
 
-	log.WithFields(log.Fields{"data": data}).Infof("Successfully events weather data %d", len(data))
+	log.WithFields(log.Fields{"data": data}).Infof("Successfully events %d", len(data))
 }

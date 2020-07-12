@@ -4,19 +4,15 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"small_container/pkg/common"
-	"small_container/pkg/config"
+	"eventspal/pkg/common"
+	"eventspal/pkg/config"
+	"strconv"
+	"strings"
+	"time"
 )
 
-type Event struct {
-	Name     string  `json:"name"`
-	URL      string  `json:"url"`
-	Distance float64 `json:"distance"`
-	Units    string  `json:"units"`
-}
-
 type Client interface {
-	GetEventsByLatLong(ctx context.Context, lat float64, lon float64, maxDistance float64) ([]Event, error)
+	GetEventsByLatLong(ctx context.Context, lat float64, lon float64, radius int) ([]Event, error)
 }
 
 type ticketmasterClient struct {
@@ -35,7 +31,7 @@ func NewClient(cfg config.Config) Client {
 	}
 }
 
-func (c ticketmasterClient) GetEventsByLatLong(ctx context.Context, lat float64, lon float64, maxDistance float64) ([]Event, error) {
+func (c ticketmasterClient) GetEventsByLatLong(ctx context.Context, lat float64, lon float64, radius int) ([]Event, error) {
 	url := c.BuildURL("/events.json")
 
 	var response = struct {
@@ -55,6 +51,7 @@ func (c ticketmasterClient) GetEventsByLatLong(ctx context.Context, lat float64,
 
 					Start struct {
 						LocalDate      string `json:"localDate"`
+						LocalTime      string `json:"localTime"`
 						DateTBD        bool   `json:"dateTBD"`
 						DateTBA        bool   `json:"dateTBA"`
 						TimeTBA        bool   `json:"timeTBA"`
@@ -66,6 +63,10 @@ func (c ticketmasterClient) GetEventsByLatLong(ctx context.Context, lat float64,
 						Approximate    bool   `json:"approximate"`
 						NoSpecificTime bool   `json:"noSpecificTime"`
 					} `json:"end"`
+
+					Status struct {
+						Code string `json:"code"`
+					} `json:"status"`
 				} `json:"dates"`
 
 				Embedded struct {
@@ -84,6 +85,8 @@ func (c ticketmasterClient) GetEventsByLatLong(ctx context.Context, lat float64,
 	query := common.Query{
 		"sort":    "distance,asc",
 		"size":    "50",
+		"radius":  fmt.Sprintf("%d", radius),
+		"unit":    "km",
 		"latlong": fmt.Sprintf("%.2f,%.2f", lat, lon),
 	}
 	err := c.ExecuteRequestAndGetResponse(ctx, http.MethodGet, url, query, nil, &body, &response)
@@ -93,15 +96,45 @@ func (c ticketmasterClient) GetEventsByLatLong(ctx context.Context, lat float64,
 
 	var result []Event
 	for _, data := range response.Embeded.Events {
-		if data.Distance > maxDistance {
+		if data.Dates.Status.Code == "cancelled" {
 			continue
 		}
 
+		if data.Dates.Start.DateTBA || data.Dates.Start.DateTBD || data.Dates.Start.NoSpecificTime {
+			continue
+		}
+
+		dateParts := strings.Split(data.Dates.Start.LocalDate, "-")
+		startYear, err := strconv.Atoi(dateParts[0])
+		if err != nil {
+			return nil, fmt.Errorf("failed to get start year: %w", err)
+		}
+		startMonth, err := strconv.Atoi(dateParts[1])
+		if err != nil {
+			return nil, fmt.Errorf("failed to get start month: %w", err)
+		}
+		startDay, err := strconv.Atoi(dateParts[2])
+		if err != nil {
+			return nil, fmt.Errorf("failed to get start day: %w", err)
+		}
+
+		timeParts := strings.Split(data.Dates.Start.LocalTime, ":")
+		startHour, err := strconv.Atoi(timeParts[0])
+		if err != nil {
+			return nil, fmt.Errorf("failed to get start hour: %w", err)
+		}
+		startMinute, err := strconv.Atoi(timeParts[1])
+		if err != nil {
+			return nil, fmt.Errorf("failed to get start hour: %w", err)
+		}
+
+		date := time.Date(startYear, time.Month(startMonth), startDay, startHour, startMinute, 0, 0, time.UTC)
 		result = append(result, Event{
 			Name:     data.Name,
 			URL:      data.URL,
 			Distance: data.Distance,
 			Units:    data.Units,
+			Date:     date,
 		})
 	}
 

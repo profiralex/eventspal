@@ -2,7 +2,7 @@ package logs
 
 import (
 	log "github.com/sirupsen/logrus"
-	"small_container/pkg/config"
+	"eventspal/pkg/config"
 )
 
 func Init(cfg config.Config) {

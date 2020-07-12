@@ -1,4 +1,4 @@
-module small_container
+module eventspal
 
 go 1.14
 
