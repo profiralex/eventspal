@@ -1,8 +1,8 @@
 package logs
 
 import (
-	log "github.com/sirupsen/logrus"
 	"eventspal/pkg/config"
+	log "github.com/sirupsen/logrus"
 )
 
 func Init(cfg config.Config) {

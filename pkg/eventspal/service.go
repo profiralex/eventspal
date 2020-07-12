@@ -2,10 +2,10 @@ package eventspal
 
 import (
 	"context"
-	"fmt"
 	"eventspal/pkg/config"
 	"eventspal/pkg/events"
 	"eventspal/pkg/weather"
+	"fmt"
 )
 
 type Service interface {

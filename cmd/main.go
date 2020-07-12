@@ -2,10 +2,10 @@ package main
 
 import (
 	"context"
-	log "github.com/sirupsen/logrus"
 	"eventspal/pkg/config"
 	"eventspal/pkg/eventspal"
 	"eventspal/pkg/logs"
+	log "github.com/sirupsen/logrus"
 )
 
 func main() {

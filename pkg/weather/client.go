@@ -2,10 +2,10 @@ package weather
 
 import (
 	"context"
-	"fmt"
-	"net/http"
 	"eventspal/pkg/common"
 	"eventspal/pkg/config"
+	"fmt"
+	"net/http"
 	"strconv"
 	"time"
 )
